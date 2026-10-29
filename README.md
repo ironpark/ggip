@@ -1,5 +1,10 @@
 # ggip
 
+> **Merged into [ggwd](https://github.com/ironpark/ggwd).** The keys, `Mods`, `Keyboard` and
+> `Chord` are in package `ggwd`, whose events carry them, and `gamepad` and `gamepaddb` are
+> `ggwd/gamepad` and `ggwd/gamepaddb`. `ggfxinput.StartGamepads` is `gamepad.Start`, and the
+> conversions are gone. This repository is no longer developed.
+
 ggip (go general input) handles input for a GUI: the keyboard and the mouse once a window system
 has reported them, and the gamepads, which it reads itself. It was split out of
 [ggfx](https://github.com/ironpark/ggfx) and [ggui](https://github.com/ironpark/ggui), and
