@@ -14,12 +14,13 @@ depends on neither.
   Windows, evdev on Linux, the Gamepad API in the browser), and `Tracker` turns the polls into
   connect, disconnect, button and axis events.
 - `gamepaddb`: the standard layout mappings in SDL_GameControllerDB's format.
-- `ggfxinput`: a module of its own that connects ggfx to ggip, so that neither imports the other.
+- `ggfxinput`: a module of its own that connects ggwd, ggfx's window system, to ggip, so that
+  neither imports the other.
 
-## Using it with ggfx
+## Using it with ggwd
 
-`ggfxinput` converts the keys, buttons and modifiers in ggfx's events, and polls the gamepads on
-the main thread, waking the loop with `ggfx.Wake` when it found something:
+`ggfxinput` converts the keys, buttons and modifiers in ggwd's events, and polls the gamepads on
+the main thread, waking the loop with `ggwd.Wake` when it found something:
 
 ```go
 type app struct {
@@ -28,16 +29,16 @@ type app struct {
 	save     ggip.Chord
 }
 
-func (a *app) HandleEvent(ev ggfx.Event) error {
+func (a *app) HandleEvent(ev ggwd.Event) error {
 	switch ev := ev.(type) {
-	case ggfx.StartEvent:
-		w, err := ggfx.NewWindow(&ggfx.WindowOptions{Title: "input"})
+	case ggwd.StartEvent:
+		w, err := ggwd.NewWindow(&ggwd.WindowOptions{Title: "input"})
 		if err != nil {
 			return err
 		}
 		a.save = ggip.MustChord("cmd+s")
 		a.pads = ggfxinput.StartGamepads(w)
-	case ggfx.KeyEvent:
+	case ggwd.KeyEvent:
 		key, ok := ggfxinput.Key(ev.Key)
 		if !ok {
 			break
@@ -47,11 +48,11 @@ func (a *app) HandleEvent(ev ggfx.Event) error {
 		if ev.Pressed && a.save.Matches(key, mods) {
 			log.Print("save")
 		}
-	case ggfx.FocusEvent:
+	case ggwd.FocusEvent:
 		if !ev.Focused {
 			a.keyboard.Reset()
 		}
-	case ggfx.WakeEvent:
+	case ggwd.WakeEvent:
 		for _, ev := range a.pads.Take() {
 			if ev, ok := ev.(gamepad.StandardButtonEvent); ok {
 				log.Printf("gamepad %d: %v pressed=%v", ev.ID, ev.Button, ev.Pressed)

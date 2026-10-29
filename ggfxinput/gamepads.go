@@ -18,14 +18,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ironpark/ggfx"
+	"github.com/ironpark/ggwd"
 	"github.com/ironpark/ggip/gamepad"
 )
 
-// Gamepads polls the gamepads for a ggfx app. It reads them on the main thread, through
-// ggfx.RunOnMainThread, as often as its tracker asks, and wakes the loop with ggfx.Wake when it
+// Gamepads polls the gamepads for a ggwd app. It reads them on the main thread, through
+// ggwd.RunOnMainThread, as often as its tracker asks, and wakes the loop with ggwd.Wake when it
 // found something, so the loop still sleeps while nothing happens. The handler takes the events
-// on ggfx.WakeEvent.
+// on ggwd.WakeEvent.
 type Gamepads struct {
 	mu      sync.Mutex
 	pending []gamepad.Event
@@ -39,7 +39,7 @@ type Gamepads struct {
 // StartGamepads starts polling the gamepads. Call it from the handler, once the app has a window:
 // on Windows the gamepads are read through window, which should live as long as they are read.
 // window can be nil elsewhere.
-func StartGamepads(window *ggfx.Window) *Gamepads {
+func StartGamepads(window *ggwd.Window) *Gamepads {
 	var hwnd uintptr
 	if window != nil {
 		// NativeHandle runs on the main thread, so it cannot be asked from within a poll.
@@ -56,7 +56,7 @@ func (g *Gamepads) poll(hwnd uintptr) {
 	for {
 		var err error
 		var found bool
-		ggfx.RunOnMainThread(func() {
+		ggwd.RunOnMainThread(func() {
 			if err = gamepad.Update(hwnd, nil); err != nil {
 				return
 			}
@@ -71,11 +71,11 @@ func (g *Gamepads) poll(hwnd uintptr) {
 			g.mu.Lock()
 			g.err = err
 			g.mu.Unlock()
-			ggfx.Wake()
+			ggwd.Wake()
 			return
 		}
 		if found {
-			ggfx.Wake()
+			ggwd.Wake()
 		}
 		select {
 		case <-g.stop:
@@ -85,7 +85,7 @@ func (g *Gamepads) poll(hwnd uintptr) {
 	}
 }
 
-// Take returns the events found since the last Take, in order. Call it on ggfx.WakeEvent.
+// Take returns the events found since the last Take, in order. Call it on ggwd.WakeEvent.
 func (g *Gamepads) Take() []gamepad.Event {
 	g.mu.Lock()
 	defer g.mu.Unlock()
